@@ -11,9 +11,9 @@ router.post('/', async (req, res, next) => {
   }
 
   try {
-    await customerCommandService.create({ name, creditLimit });
+    const customerId = await customerCommandService.create({ name, creditLimit });
 
-    res.status(200).send({ success: true });
+    res.status(200).send({ customerId });
   } catch (e) {
     next(e);
   }

@@ -10,11 +10,13 @@ const messageProducer = new MessageProducer({ channelMapping });
 const domainEventPublisher = new DomainEventPublisher({ messageProducer });
 
 module.exports.create = async ({ name, creditLimit }) => {
+  const creationTime = new Date().getTime();
 
-  const [ aggregateId ] = await insertIntoCustomerTable(name, creditLimit.amount);
+  const [ aggregateId ] = await insertIntoCustomerTable(name, creditLimit.amount, creationTime);
 
   const customerAndEvents = Customer.create({ name, creditLimit });
   const aggregateType = CustomerEntityTypeName;
   const extraHeaders = [];
-  return domainEventPublisher.publish(aggregateType, aggregateId, extraHeaders, customerAndEvents.events);
+  await domainEventPublisher.publish(aggregateType, aggregateId, extraHeaders, customerAndEvents.events);
+  return aggregateId;
 };
