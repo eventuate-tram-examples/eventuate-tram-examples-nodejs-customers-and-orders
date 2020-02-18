@@ -1,6 +1,4 @@
-const DomainEventPublisher = require('eventuate-tram-core-nodejs/lib/DomainEventPublisher');
-const DefaultChannelMapping = require('eventuate-tram-core-nodejs/lib/DefaultChannelMapping');
-const MessageProducer = require('eventuate-tram-core-nodejs/lib/MessageProducer');
+const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Customer = require('./aggregates/Customer');
 const { CustomerEntityTypeName } = require('../../common/eventsConfig');
 const { insertIntoCustomerTable } = require('./mysql/customerCrudService');
@@ -15,11 +13,8 @@ module.exports.create = async ({ name, creditLimit }) => {
   const trx = await knex.transaction();
   try {
     const [ aggregateId ] = await insertIntoCustomerTable(name, creditLimit.amount, creationTime, { trx });
-
     const customerAndEvents = Customer.create({ name, creditLimit });
-    const aggregateType = CustomerEntityTypeName;
-    const extraHeaders = [];
-    await domainEventPublisher.publish(aggregateType, aggregateId, extraHeaders, customerAndEvents.events, trx);
+    await domainEventPublisher.publish(CustomerEntityTypeName, aggregateId, customerAndEvents.events, { trx });
     await trx.commit();
     return aggregateId;
   } catch (e) {

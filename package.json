@@ -18,10 +18,11 @@
   "homepage": "https://github.com/dartvandru/eventuate-tram-examples-nodejs-customers-and-orders#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "eventuate-tram-core-nodejs": "git+ssh://git@github.com/eventuate-incubator/eventuate-tram-core-nodejs.git",
+    "eventuate-tram-core-nodejs": "file:../eventuate-tram-core-nodejs",
     "express": "^4.17.1",
     "knex": "^0.20.8",
     "log4js": "^6.1.1",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "mysql": "^2.18.1"
   }
 }

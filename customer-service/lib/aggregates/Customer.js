@@ -5,6 +5,8 @@ class Customer {
   constructor({ name, creditLimit }) {
     this.name = name;
     this.creditLimit = creditLimit;
+    this.creditReservations = [];
+    this.creationTime = new Date().getTime();
   }
 
   static create(name, creditLimit) {
@@ -14,12 +16,32 @@ class Customer {
       customer,
       events: [
         {
-          [EVENT_TYPE]: CustomerCreatedEvent,
-          [AGGREGATE_TYPE]: CustomerEntityTypeName,
-          [EVENT_DATA]: customer
+          _type: CustomerCreatedEvent,
+          name: customer.name,
+          creditLimit: customer.creditLimit
         }
       ]
     }
+  }
+
+  availableCredit() {
+    const reservationsSum = Object.values(this.creditReservations).reduce((acc, r ) => {
+      acc += r;
+      return acc;
+    }, 0);
+    return this.creditLimit - reservationsSum;
+  }
+
+  reserveCredit(orderId, orderTotal) {
+    if (this.availableCredit() >= orderTotal) {
+      this.creditReservations[orderId] = orderTotal;
+    } else {
+      throw new Error('CustomerCreditLimitExceededException');
+    }
+  }
+
+  unreserveCredit(orderId) {
+    delete this.creditReservations[orderId];
   }
 }
 

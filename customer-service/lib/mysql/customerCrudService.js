@@ -15,6 +15,12 @@ function insertIntoCustomerTable (name, amount, creation_time, context = {}) {
   return knex(CUSTOMER_TABLE).insert(customer).returning('*');
 }
 
+async function getCustomerById(id) {
+  const [ message ] = await knex(CUSTOMER_TABLE).where('id', id);
+  return message;
+}
+
 module.exports = {
-  insertIntoCustomerTable
+  insertIntoCustomerTable,
+  getCustomerById
 };

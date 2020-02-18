@@ -5,9 +5,7 @@ const customerCommandRoutes = require('./lib/customerCommandRoutes');
 const { getLogger } = require('../common/logger');
 const logger = getLogger({ title: 'customer-service' });
 const orderEventHandlers = require('./lib/orderEventHandlers');
-const DomainEventDispatcher = require('eventuate-tram-core-nodejs/lib/DomainEventDispatcher');
-const MessageConsumer = require('eventuate-tram-core-nodejs/lib/kafka/MessageConsumer');
-const DefaultDomainEventNameMapping = require('eventuate-tram-core-nodejs/lib/DefaultDomainEventNameMapping');
+const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
 
 const domainEventNameMapping = new DefaultDomainEventNameMapping();
 const messageConsumer = new MessageConsumer();
@@ -37,7 +35,7 @@ app.use((err, req, res) => {
 (async function () {
 
   const domainEventDispatcher = new DomainEventDispatcher({
-    eventDispatcherId: 'orderServiceEvents',
+    eventDispatcherId: 'orderServiceEventsNode',
     domainEventHandlers: orderEventHandlers,
     messageConsumer,
     domainEventNameMapping
