@@ -9,19 +9,8 @@ class Customer {
     this.creationTime = new Date().getTime();
   }
 
-  static create(name, creditLimit) {
-    const customer = new Customer({ name, creditLimit });
-
-    return {
-      customer,
-      events: [
-        {
-          _type: CustomerCreatedEvent,
-          name: customer.name,
-          creditLimit: customer.creditLimit
-        }
-      ]
-    }
+  static create({ name, creditLimit }) {
+    return [{ _type: CustomerCreatedEvent, name, creditLimit }]
   }
 
   availableCredit() {

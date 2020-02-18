@@ -13,8 +13,8 @@ module.exports.create = async ({ name, creditLimit }) => {
   const trx = await knex.transaction();
   try {
     const [ aggregateId ] = await insertIntoCustomerTable(name, creditLimit.amount, creationTime, { trx });
-    const customerAndEvents = Customer.create({ name, creditLimit });
-    await domainEventPublisher.publish(CustomerEntityTypeName, aggregateId, customerAndEvents.events, { trx });
+    const events = Customer.create({ name, creditLimit });
+    await domainEventPublisher.publish(CustomerEntityTypeName, aggregateId, events, { trx });
     await trx.commit();
     return aggregateId;
   } catch (e) {
