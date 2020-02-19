@@ -47,7 +47,7 @@ module.exports = {
 
           if (err.message === 'CustomerCreditLimitExceededException') {
             const customerCreditReservationFailedEvent = { _type: CustomerCreditReservationFailedEvent, orderId };
-            domainEventPublisher.publish(CustomerEntityTypeName, customerId, [ customerCreditReservationFailedEvent ]);
+            return domainEventPublisher.publish(CustomerEntityTypeName, customerId, [ customerCreditReservationFailedEvent ]);
           }
 
           return Promise.reject(err);
@@ -73,7 +73,7 @@ module.exports = {
         }
 
         const customer = new Customer({name: possibleCustomer.name, creditLimit: possibleCustomer.amount});
-        customer.unreserveCredit(orderId);
+        customer.unReserveCredit(orderId);
 
         return Promise.resolve();
       } catch (e) {

@@ -22,14 +22,15 @@ class Customer {
   }
 
   reserveCredit(orderId, orderTotal) {
-    if (this.availableCredit() >= orderTotal) {
-      this.creditReservations[orderId] = orderTotal;
+    const { amount } = orderTotal;
+    if (this.availableCredit() >= amount) {
+      this.creditReservations[orderId] = amount;
     } else {
       throw new Error('CustomerCreditLimitExceededException');
     }
   }
 
-  unreserveCredit(orderId) {
+  unReserveCredit(orderId) {
     delete this.creditReservations[orderId];
   }
 }
