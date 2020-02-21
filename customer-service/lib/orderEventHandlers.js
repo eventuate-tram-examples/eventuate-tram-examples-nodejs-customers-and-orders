@@ -10,6 +10,8 @@ const {
 const { getCustomerById } = require('../lib/mysql/customerCrudService');
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Customer = require('./aggregates/Customer');
+const { getLogger } = require('../../common/logger');
+const logger = getLogger({ title: 'customer-service' });
 
 const channelMapping = new DefaultChannelMapping(new Map());
 const messageProducer = new MessageProducer({ channelMapping });
@@ -61,7 +63,7 @@ module.exports = {
       const { partitionId: orderId } = event;
       try {
         const payload = JSON.parse(event.payload);
-        const {orderDetails: {customerId, orderTotal}} = payload;
+        const { orderDetails: { customerId, orderTotal }} = payload;
 
         const possibleCustomer = await getCustomerById(customerId);
         if (!possibleCustomer) {

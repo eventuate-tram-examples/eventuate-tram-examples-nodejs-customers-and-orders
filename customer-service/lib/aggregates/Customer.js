@@ -5,7 +5,7 @@ class Customer {
   constructor({ name, creditLimit }) {
     this.name = name;
     this.creditLimit = creditLimit;
-    this.creditReservations = [];
+    this.creditReservations = {};
     this.creationTime = new Date().getTime();
   }
 

@@ -6,17 +6,21 @@ const { getLogger } = require('../common/logger');
 const logger = getLogger({ title: 'customer-service' });
 const orderEventHandlers = require('./lib/orderEventHandlers');
 const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
+const { createCustomerTable, createCustomerCreditReservationsTable } = require('./lib/mysql/customerCrudService');
 
 const domainEventNameMapping = new DefaultDomainEventNameMapping();
 const messageConsumer = new MessageConsumer();
 const app = express();
-const port = process.env.TODO_LIST_COMMAND_PORT || 8079;
+const port = process.env.TODO_LIST_COMMAND_PORT || 8082;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(morgan('dev'));
 app.use('/customers', customerCommandRoutes);
+app.get('/actuator/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 //error handling
 app.use((err, req, res) => {
@@ -33,6 +37,24 @@ app.use((err, req, res) => {
 });
 
 (async function () {
+
+  try {
+    await createCustomerTable();
+  }  catch (e) {
+    if (e.code !== 'ER_TABLE_EXISTS_ERROR') {
+      logger.error(e);
+      process.exit(1);
+    }
+  }
+
+  try {
+    await createCustomerCreditReservationsTable();
+  }  catch (e) {
+    if (e.code !== 'ER_TABLE_EXISTS_ERROR') {
+      logger.error(e);
+      process.exit(1);
+    }
+  }
 
   const domainEventDispatcher = new DomainEventDispatcher({
     eventDispatcherId: 'orderServiceEventsNode',
