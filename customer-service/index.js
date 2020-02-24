@@ -6,7 +6,8 @@ const { getLogger } = require('../common/logger');
 const logger = getLogger({ title: 'customer-service' });
 const orderEventHandlers = require('./lib/orderEventHandlers');
 const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
-const { createCustomerTable, createCustomerCreditReservationsTable } = require('./lib/mysql/customerCrudService');
+const { createCustomerTable } = require('./lib/mysql/customerCrudService');
+const { createCustomerCreditReservationsTable } = require('./lib/mysql/customerCreditReservationsCrudService');
 
 const domainEventNameMapping = new DefaultDomainEventNameMapping();
 const messageConsumer = new MessageConsumer();

@@ -3,7 +3,6 @@ const { getLogger } = require('../../../common/logger');
 
 const logger = getLogger({ title: 'customer-service' });
 const CUSTOMER_TABLE = 'customer';
-const CUSTOMER_CREDIT_RESERVATIONS_TABLE = 'customer_credit_reservations';
 
 function insertIntoCustomerTable (name, amount, creation_time, context = {}) {
   const { trx } = context;
@@ -17,8 +16,8 @@ function insertIntoCustomerTable (name, amount, creation_time, context = {}) {
 }
 
 async function getCustomerById(id) {
-  const [ message ] = await knex(CUSTOMER_TABLE).where('id', id);
-  return message;
+  const [ customer ] = await knex(CUSTOMER_TABLE).where('id', id);
+  return customer;
 }
 
 function createCustomerTable() {
@@ -30,19 +29,8 @@ function createCustomerTable() {
   })
 }
 
-
-function createCustomerCreditReservationsTable() {
-  return knex.schema.createTable(CUSTOMER_CREDIT_RESERVATIONS_TABLE, (table) => {
-    table.bigInteger('customer_id');
-    table.bigInteger('credit_reservations_key');
-    table.decimal('amount', 19, 2);
-    table.primary(['customer_id', 'credit_reservations_key'])
-  })
-}
-
 module.exports = {
   insertIntoCustomerTable,
   getCustomerById,
   createCustomerTable,
-  createCustomerCreditReservationsTable,
 };
