@@ -1,0 +1,26 @@
+FROM node:12
+WORKDIR /app
+ARG SSH_PRIVATE_KEY
+
+#Install git and npm to clone the repo and install npm packages
+RUN apt-get update
+RUN apt-get install -y git
+
+#Pass the content of the private key into the container
+RUN mkdir /root/.ssh/
+RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
+
+#Github requires a private key with strict permission settings
+RUN chmod 600 /root/.ssh/id_rsa
+#Add Github to known hosts
+RUN touch /root/.ssh/known_hosts
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+#Copy package.json and package-lock.json(if exists) into container
+COPY package*.json ./
+
+RUN npm install
+
+COPY customer-service ./customer-service
+COPY common ./common
+
+CMD [ "node", "customer-service/index.js" ]
