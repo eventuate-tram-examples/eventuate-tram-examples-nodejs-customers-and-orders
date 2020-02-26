@@ -12,7 +12,7 @@ const { createCustomerCreditReservationsTable } = require('./lib/mysql/customerC
 const domainEventNameMapping = new DefaultDomainEventNameMapping();
 const messageConsumer = new MessageConsumer();
 const app = express();
-const port = process.env.TODO_LIST_COMMAND_PORT || 8082;
+const port = process.env.CUSTOMER_SERVICE_PORT || 8082;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -38,7 +38,6 @@ app.use((err, req, res) => {
 });
 
 (async function () {
-
   try {
     await createCustomerTable();
   }  catch (e) {

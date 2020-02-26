@@ -15,6 +15,7 @@ RUN chmod 600 /root/.ssh/id_rsa
 #Add Github to known hosts
 RUN touch /root/.ssh/known_hosts
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+
 #Copy package.json and package-lock.json(if exists) into container
 COPY package*.json ./
 
