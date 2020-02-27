@@ -5,9 +5,13 @@ const bodyParser = require('body-parser');
 const orderCommandRoutes = require('./lib/orderCommandRoutes');
 const logger = getLogger({ title: 'order-service' });
 const { createOrdersTable } = require('./lib/mysql/orderCrudService');
+const customerEventHandlers = require('./lib/customerEventHandlers');
+const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
 
+const domainEventNameMapping = new DefaultDomainEventNameMapping();
+const messageConsumer = new MessageConsumer();
 const app = express();
-const port = process.env.ORDER_SERVICE_PORT || 8082;
+const port = process.env.ORDER_SERVICE_PORT || 8081;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -40,6 +44,20 @@ app.use((err, req, res) => {
       logger.error(e);
       process.exit(1);
     }
+  }
+
+  const domainEventDispatcher = new DomainEventDispatcher({
+    eventDispatcherId: 'customerServiceEventsNode',
+    domainEventHandlers: customerEventHandlers,
+    messageConsumer,
+    domainEventNameMapping
+  });
+
+  try {
+    await domainEventDispatcher.initialize();
+  } catch (e) {
+    logger.error(e);
+    process.exit(1);
   }
 
   app.listen(port, () => {

@@ -70,7 +70,6 @@ app.use((err, req, res) => {
     process.exit(1);
   }
 
-
   app.listen(port, () => {
     logger.info(`Customer Service listening on ${port}`);
   });

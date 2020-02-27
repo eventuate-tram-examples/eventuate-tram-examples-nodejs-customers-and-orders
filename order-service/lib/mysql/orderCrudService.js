@@ -29,8 +29,24 @@ function createOrdersTable() {
   })
 }
 
+function updateOrderState(id, state, context = {}) {
+  const { trx } = context;
+
+  if (trx) {
+    return knex(ORDER_TABLE)
+      .transacting(trx)
+      .where('id', id)
+      .update({ state });
+  }
+
+  return knex(ORDER_TABLE)
+    .where('id', id)
+    .update({ state });
+}
+
 module.exports = {
   insertIntoOrdersTable,
   getOrderById,
   createOrdersTable,
+  updateOrderState,
 };

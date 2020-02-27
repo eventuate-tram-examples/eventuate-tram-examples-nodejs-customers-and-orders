@@ -29,7 +29,7 @@ function publishCustomerValidationFailedEvent(orderId, customerId) {
 module.exports = {
   [OrderEntityTypeName]: {
     [OrderCreatedEvent]: async (event) => {
-      console.log('event:', event);
+      logger.debug('event:', event);
       const { partitionId: orderId } = event;
 
       const trx = await knex.transaction();
@@ -70,7 +70,7 @@ module.exports = {
       }
     },
     [OrderCancelledEvent]: async (event) => {
-      console.log('event:', event);
+      logger.debug('event:', event);
       const { partitionId: orderId } = event;
       try {
         const payload = JSON.parse(event.payload);
