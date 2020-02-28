@@ -32,7 +32,7 @@ router.get('/:orderId', async (req, res, next) => {
     }
     res.status(200).send({
       orderId: order.id,
-      orderState: Object.keys(Order.orderState)[order.state],
+      orderState: Order.getOrderStateText(order.state),
     });
   } catch (e) {
     next(e);
@@ -44,7 +44,10 @@ router.post('/:orderId/cancel', async (req, res, next) => {
 
   try {
     const order = await orderCommandService.cancelOrder(orderId);
-    res.status(200).send(order);
+    res.status(200).send({
+      orderId: order.id,
+      orderState: Order.getOrderStateText(order.state)
+    });
   } catch (e) {
     if (e.message === 'OrderNotExistsException') {
       return res.status(404).send();

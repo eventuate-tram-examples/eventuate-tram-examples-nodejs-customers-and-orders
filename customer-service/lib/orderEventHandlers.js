@@ -52,7 +52,7 @@ module.exports = {
         const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
         await customer.reserveCredit(orderId, orderTotal, trx);
 
-        const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId };
+        const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
         await domainEventPublisher.publish(CustomerEntityTypeName,
           customerId,
           [ customerCreditReservedEvent ],

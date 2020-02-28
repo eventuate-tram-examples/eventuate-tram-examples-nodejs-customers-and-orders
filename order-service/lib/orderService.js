@@ -79,7 +79,7 @@ module.exports.approveOrder = async (orderId) => {
     await domainEventPublisher.publish(
       OrderEntityTypeName,
       orderId,
-      [ { _type: OrderApprovedEvent, ...order.orderDetails } ],
+      [ { _type: OrderApprovedEvent, orderDetails: order.orderDetails } ],
       { trx }
     );
     await trx.commit();

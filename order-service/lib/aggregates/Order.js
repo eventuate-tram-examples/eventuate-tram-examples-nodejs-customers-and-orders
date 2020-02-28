@@ -41,6 +41,10 @@ class Order {
     CANCEL_PENDING: 3,
     CANCELLED: 4
   };
+
+  static getOrderStateText(state) {
+    return Object.keys(Order.orderState)[state];
+  }
 }
 
 module.exports = Order;
