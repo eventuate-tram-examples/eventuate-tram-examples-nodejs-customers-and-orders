@@ -27,7 +27,7 @@ module.exports = {
       try {
         const payload = JSON.parse(event.payload);
         const { orderId } = payload;
-        return orderService.approveOrder(orderId);
+        return orderService.rejectOrder(orderId);
       } catch (err) {
         return Promise.reject(err);
       }

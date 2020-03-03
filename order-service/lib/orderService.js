@@ -93,11 +93,11 @@ module.exports.rejectOrder = async (orderId) => {
   const trx = await knex.transaction();
   const order = await getOrderEntity(orderId);
 
-  order.noteCreditReservationFailed();
+  await order.noteCreditReservationFailed(trx);
   await domainEventPublisher.publish(
     OrderEntityTypeName,
     orderId,
-    [ { _type: OrderRejectedEvent, ...order.orderDetails } ],
+    [ { _type: OrderRejectedEvent, orderDetails: order.orderDetails } ],
     { trx }
   );
   await trx.commit();

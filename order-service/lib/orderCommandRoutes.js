@@ -28,7 +28,7 @@ router.get('/:orderId', async (req, res, next) => {
     const order = await orderCommandService.getOrderById(orderId);
 
     if (!order) {
-      res.status(404).send('Order not found');
+      return res.status(404).send('Order not found');
     }
     res.status(200).send({
       orderId: order.id,
