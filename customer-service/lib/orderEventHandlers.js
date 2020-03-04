@@ -1,5 +1,6 @@
-const knex = require('./mysql/knex');
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
+const knex = require('../../common/mysql/knex');
+const { withTransaction } = require('../../common/mysql/utils');
 
 const {
   OrderEntityTypeName,
@@ -20,12 +21,14 @@ const channelMapping = new DefaultChannelMapping(new Map());
 const messageProducer = new MessageProducer({ channelMapping });
 const domainEventPublisher = new DomainEventPublisher({ messageProducer });
 
-function publishCustomerValidationFailedEvent(orderId, customerId) {
+function publishCustomerValidationFailedEvent(orderId, customerId, trx) {
   logger.error('Non-existent customer', { orderId, customerId });
   const customerValidationFailedEvent = { orderId, _type: CustomerValidationFailedEvent };
   return domainEventPublisher.publish(CustomerEntityTypeName,
     customerId,
-    [ customerValidationFailedEvent ]);
+    [ customerValidationFailedEvent ],
+    { trx }
+  );
 }
 
 module.exports = {
@@ -34,61 +37,60 @@ module.exports = {
       logger.debug('event:', event);
       const { partitionId: orderId } = event;
 
-      const trx = await knex.transaction();
+      return withTransaction(async (trx) => {
+        let customerId;
+        try {
+          const payload = JSON.parse(event.payload);
+          const { orderDetails: { orderTotal }} = payload;
+          ({ orderDetails: { customerId }} = payload);
 
-      let customerId;
-      try {
-        const payload = JSON.parse(event.payload);
-        const { orderDetails: { orderTotal }} = payload;
-        ({ orderDetails: { customerId }} = payload);
+          if (typeof (customerId) === 'undefined') {
+            return publishCustomerValidationFailedEvent(orderId, String(customerId));
+          }
 
-        if (typeof (customerId) === 'undefined') {
-          return publishCustomerValidationFailedEvent(orderId, String(customerId));
+          const possibleCustomer = await getCustomerById(customerId, { trx });
+          if (!possibleCustomer) {
+            return publishCustomerValidationFailedEvent(orderId, customerId, trx);
+          }
+
+          const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
+          const reservations = await getCustomerCreditReservations(customer.id, { trx });
+          customer.initCreditReservations(reservations);
+          customer.reserveCredit(orderId, orderTotal);
+          await insertCustomerReservation(customer.id, orderTotal.amount, orderId, { trx });
+
+          const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
+          return domainEventPublisher.publish(CustomerEntityTypeName,
+            customerId,
+            [ customerCreditReservedEvent ],
+            { trx });
+        } catch (err) {
+          if (err.message === 'CustomerCreditLimitExceededException') {
+            const customerCreditReservationFailedEvent = { _type: CustomerCreditReservationFailedEvent, orderId };
+            return domainEventPublisher.publish(CustomerEntityTypeName, customerId, [ customerCreditReservationFailedEvent ]);
+          }
+          return Promise.reject(err);
         }
-
-        const possibleCustomer = await getCustomerById(customerId);
-        if (!possibleCustomer) {
-          return publishCustomerValidationFailedEvent(orderId, customerId);
-        }
-
-        const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
-        const reservations = await getCustomerCreditReservations(customer.id);
-        customer.initCreditReservations(reservations);
-        customer.reserveCredit(orderId, orderTotal);
-        await insertCustomerReservation(customer.id, orderTotal.amount, orderId, { trx });
-
-        const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
-        await domainEventPublisher.publish(CustomerEntityTypeName,
-          customerId,
-          [ customerCreditReservedEvent ],
-          { trx });
-        await trx.commit();
-
-      } catch (err) {
-        if (err.message === 'CustomerCreditLimitExceededException') {
-          const customerCreditReservationFailedEvent = { _type: CustomerCreditReservationFailedEvent, orderId };
-          return domainEventPublisher.publish(CustomerEntityTypeName, customerId, [ customerCreditReservationFailedEvent ]);
-        }
-
-        await trx.rollback();
-        return Promise.reject(err);
-      }
+      });
     },
     [OrderCancelledEvent]: async (event) => {
       logger.debug('event:', event);
       const { partitionId: orderId } = event;
       try {
         const payload = JSON.parse(event.payload);
-        const { orderDetails: { customerId, orderTotal }} = payload;
+        const { orderDetails: { customerId }} = payload;
 
-        const possibleCustomer = await getCustomerById(customerId);
-        if (!possibleCustomer) {
-          return publishCustomerValidationFailedEvent(orderId, customerId);
-        }
+        return withTransaction(async (trx) => {
 
-        const customer = new Customer({name: possibleCustomer.name, creditLimit: possibleCustomer.amount});
-        customer.unReserveCredit(orderId);
-        return deleteCustomerReservation(orderId)
+          const possibleCustomer = await getCustomerById(customerId, { trx });
+          if (!possibleCustomer) {
+            return publishCustomerValidationFailedEvent(orderId, customerId, trx);
+          }
+
+          const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
+          customer.unReserveCredit(orderId);
+          return deleteCustomerReservation(orderId, { trx });
+        });
       } catch (e) {
         return Promise.reject(e);
       }

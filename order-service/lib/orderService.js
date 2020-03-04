@@ -2,14 +2,15 @@ const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require
 const Order = require('./aggregates/Order');
 const { OrderEntityTypeName, OrderCancelledEvent, OrderApprovedEvent, OrderRejectedEvent } = require('../../common/eventsConfig');
 const { insertIntoOrdersTable, getOrderById, updateOrderState } = require('./mysql/orderCrudService');
-const knex = require('./mysql/knex');
+const knex = require('../../common/mysql/knex');
+const { withTransaction } = require('../../common/mysql/utils');
 
 const channelMapping = new DefaultChannelMapping(new Map());
 const messageProducer = new MessageProducer({ channelMapping });
 const domainEventPublisher = new DomainEventPublisher({ messageProducer });
 
-async function getOrderEntity(id) {
-  const orderData = await getOrderById(id);
+async function getOrderEntity(id, trx) {
+  const orderData = await getOrderById(id, { trx });
   if (!orderData) {
     throw new Error('OrderNotExistsException')
   }
@@ -27,26 +28,19 @@ async function getOrderEntity(id) {
 }
 
 module.exports.create = async ({ customerId, orderTotal }) => {
-  const trx = await knex.transaction();
-  try {
+  return withTransaction(async (trx) => {
     const state = Order.orderState.PENDING;
     const [ aggregateId ] = await insertIntoOrdersTable(customerId, orderTotal.amount, state, { trx });
     const events = Order.createOrder({ customerId, orderTotal });
     await domainEventPublisher.publish(OrderEntityTypeName, aggregateId, events, { trx });
-    await trx.commit();
     return aggregateId;
-  } catch (e) {
-    await trx.rollback();
-    throw e;
-  }
+  });
 };
 
 module.exports.cancelOrder = async (orderId) => {
-  const trx = await knex.transaction();
-  const order = await getOrderEntity(orderId);
-
-  try {
-    await order.cancelOrder(trx);
+  return withTransaction(async (trx) => {
+    const order = await getOrderEntity(orderId, trx);
+    order.cancelOrder();
     await updateOrderState(order.id, order.state, { trx });
     await domainEventPublisher.publish(
       OrderEntityTypeName,
@@ -55,16 +49,12 @@ module.exports.cancelOrder = async (orderId) => {
       { trx }
     );
 
-    await trx.commit();
     return {
       id: order.id,
       orderDetails: order.orderDetails,
       state: order.state,
     };
-  } catch (e) {
-    await trx.rollback();
-    throw e;
-  }
+  });
 };
 
 module.exports.getOrderById = async (orderId) => {
@@ -72,36 +62,31 @@ module.exports.getOrderById = async (orderId) => {
 };
 
 module.exports.approveOrder = async (orderId) => {
-  const trx = await knex.transaction();
-  const order = await getOrderEntity(orderId);
+  return withTransaction(async (trx) => {
+    const order = await getOrderEntity(orderId, trx);
 
-  try {
-    await order.noteCreditReserved(trx);
+    order.noteCreditReserved();
     await updateOrderState(order.id, order.state, { trx });
-    await domainEventPublisher.publish(
+    return domainEventPublisher.publish(
       OrderEntityTypeName,
       orderId,
       [ { _type: OrderApprovedEvent, orderDetails: order.orderDetails } ],
       { trx }
     );
-    await trx.commit();
-  } catch (e) {
-    await trx.rollback();
-    throw e;
-  }
+  });
 };
 
 module.exports.rejectOrder = async (orderId) => {
-  const trx = await knex.transaction();
-  const order = await getOrderEntity(orderId);
+  return withTransaction(async (trx) => {
+    const order = await getOrderEntity(orderId, trx);
 
-  await order.noteCreditReservationFailed(trx);
-  await updateOrderState(order.id, order.state, { trx });
-  await domainEventPublisher.publish(
-    OrderEntityTypeName,
-    orderId,
-    [ { _type: OrderRejectedEvent, orderDetails: order.orderDetails } ],
-    { trx }
-  );
-  await trx.commit();
+    order.noteCreditReservationFailed();
+    await updateOrderState(order.id, order.state, { trx });
+    return domainEventPublisher.publish(
+      OrderEntityTypeName,
+      orderId,
+      [ { _type: OrderRejectedEvent, orderDetails: order.orderDetails } ],
+      { trx }
+    );
+  });
 };

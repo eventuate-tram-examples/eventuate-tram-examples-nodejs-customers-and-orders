@@ -1,4 +1,4 @@
-const { ensureEnvVariables } = require('../../../common/env');
+const { ensureEnvVariables } = require('../env');
 
 const [ host, port, user, password, database ] = ensureEnvVariables([
   'EVENTUATE_TRAM_MYSQL_HOST',

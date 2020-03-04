@@ -1,4 +1,4 @@
-const knex = require('./knex');
+const knex = require('../../../common/mysql/knex');
 const { getLogger } = require('../../../common/logger');
 
 const logger = getLogger({ title: 'order-service' });
@@ -15,8 +15,15 @@ function insertIntoOrdersTable (customer_id, amount, state, context = {}) {
   return knex(ORDER_TABLE).insert(order).returning('*');
 }
 
-async function getOrderById(id) {
-  const [ order ] = await knex(ORDER_TABLE).where('id', id);
+async function getOrderById(id, context= {} ) {
+  const { trx } = context;
+  let order;
+  if (trx) {
+    ([ order ] = await knex(ORDER_TABLE).transacting(trx).where('id', id));
+  } else {
+    ([ order ] = await knex(ORDER_TABLE).where('id', id));
+  }
+
   return order;
 }
 

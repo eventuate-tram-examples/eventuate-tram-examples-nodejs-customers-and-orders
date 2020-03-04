@@ -1,4 +1,4 @@
-const knex = require('./knex');
+const knex = require('../../../common/mysql/knex');
 const { getLogger } = require('../../../common/logger');
 
 const logger = getLogger({ title: 'customer-service' });
@@ -13,7 +13,11 @@ function createCustomerCreditReservationsTable() {
   })
 }
 
-function getCustomerCreditReservations(customerId) {
+function getCustomerCreditReservations(customerId, context = {}) {
+  const { trx } = context;
+  if (trx) {
+    return knex(CUSTOMER_CREDIT_RESERVATIONS_TABLE).transacting(trx).where('customer_id', customerId);
+  }
   return knex(CUSTOMER_CREDIT_RESERVATIONS_TABLE).where('customer_id', customerId);
 }
 

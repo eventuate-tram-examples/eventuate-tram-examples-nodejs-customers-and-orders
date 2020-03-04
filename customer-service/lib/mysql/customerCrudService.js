@@ -1,4 +1,4 @@
-const knex = require('./knex');
+const knex = require('../../../common/mysql/knex');
 const { getLogger } = require('../../../common/logger');
 
 const logger = getLogger({ title: 'customer-service' });
@@ -15,8 +15,14 @@ function insertIntoCustomerTable (name, amount, creation_time, context = {}) {
   return knex(CUSTOMER_TABLE).insert(customer).returning('*');
 }
 
-async function getCustomerById(id) {
-  const [ customer ] = await knex(CUSTOMER_TABLE).where('id', id);
+async function getCustomerById(id, context = {}) {
+  const { trx } = context;
+  let customer;
+  if (trx) {
+    ([ customer ] = await knex(CUSTOMER_TABLE).transacting(trx).where('id', id));
+  } else {
+    ([ customer ] = await knex(CUSTOMER_TABLE).where('id', id));
+  }
   return customer;
 }
 
@@ -29,21 +35,8 @@ function createCustomerTable() {
   })
 }
 
-async function withTransaction(callback) {
-  const trx = await knex.transaction();
-  try {
-    const result = await callback(trx);
-    await trx.commit();
-    return result;
-  } catch (e) {
-    await trx.rollback();
-    throw e;
-  }
-}
-
 module.exports = {
   insertIntoCustomerTable,
   getCustomerById,
   createCustomerTable,
-  withTransaction,
 };
