@@ -1,4 +1,6 @@
 const knex = require('./mysql/knex');
+const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
+
 const {
   OrderEntityTypeName,
   OrderCreatedEvent,
@@ -9,8 +11,8 @@ const {
   CustomerCreditReservedEvent
 } = require('../../common/eventsConfig');
 const { getCustomerById } = require('../lib/mysql/customerCrudService');
-const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Customer = require('./aggregates/Customer');
+const { insertCustomerReservation, deleteCustomerReservation, getCustomerCreditReservations } = require('./mysql/customerCreditReservationsCrudService');
 const { getLogger } = require('../../common/logger');
 const logger = getLogger({ title: 'customer-service' });
 
@@ -50,7 +52,10 @@ module.exports = {
         }
 
         const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
-        await customer.reserveCredit(orderId, orderTotal, trx);
+        const reservations = await getCustomerCreditReservations(customer.id);
+        customer.initCreditReservations(reservations);
+        customer.reserveCredit(orderId, orderTotal);
+        await insertCustomerReservation(customer.id, orderTotal.amount, orderId, { trx });
 
         const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
         await domainEventPublisher.publish(CustomerEntityTypeName,
@@ -82,7 +87,8 @@ module.exports = {
         }
 
         const customer = new Customer({name: possibleCustomer.name, creditLimit: possibleCustomer.amount});
-        return customer.unReserveCredit(orderId);
+        customer.unReserveCredit(orderId);
+        return deleteCustomerReservation(orderId)
       } catch (e) {
         return Promise.reject(e);
       }

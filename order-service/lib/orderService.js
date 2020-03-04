@@ -1,7 +1,7 @@
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Order = require('./aggregates/Order');
 const { OrderEntityTypeName, OrderCancelledEvent, OrderApprovedEvent, OrderRejectedEvent } = require('../../common/eventsConfig');
-const { insertIntoOrdersTable, getOrderById } = require('./mysql/orderCrudService');
+const { insertIntoOrdersTable, getOrderById, updateOrderState } = require('./mysql/orderCrudService');
 const knex = require('./mysql/knex');
 
 const channelMapping = new DefaultChannelMapping(new Map());
@@ -47,6 +47,7 @@ module.exports.cancelOrder = async (orderId) => {
 
   try {
     await order.cancelOrder(trx);
+    await updateOrderState(order.id, order.state, { trx });
     await domainEventPublisher.publish(
       OrderEntityTypeName,
       orderId,
@@ -76,6 +77,7 @@ module.exports.approveOrder = async (orderId) => {
 
   try {
     await order.noteCreditReserved(trx);
+    await updateOrderState(order.id, order.state, { trx });
     await domainEventPublisher.publish(
       OrderEntityTypeName,
       orderId,
@@ -94,6 +96,7 @@ module.exports.rejectOrder = async (orderId) => {
   const order = await getOrderEntity(orderId);
 
   await order.noteCreditReservationFailed(trx);
+  await updateOrderState(order.id, order.state, { trx });
   await domainEventPublisher.publish(
     OrderEntityTypeName,
     orderId,

@@ -1,5 +1,4 @@
 const { OrderCreatedEvent } = require('../../../common/eventsConfig');
-const { updateOrderState } = require('../mysql/orderCrudService');
 
 class Order {
   constructor({ id, orderDetails, state }) {
@@ -12,26 +11,24 @@ class Order {
     return [{ _type: OrderCreatedEvent, orderDetails: { customerId, orderTotal }}]
   }
 
-  cancelOrder(trx) {
+  cancelOrder() {
     switch (this.state) {
       case Order.orderState.PENDING:
         throw new Error('PendingOrderCantBeCancelledException');
       case Order.orderState.APPROVED:
         this.state = Order.orderState.CANCELLED;
-        return updateOrderState(this.id, this.state, { trx });
+        break;
       default:
         throw new Error(`Can't cancel in this state ${this.state}`);
     }
   }
 
-  noteCreditReserved(trx) {
+  noteCreditReserved() {
     this.state = Order.orderState.APPROVED;
-    return updateOrderState(this.id, this.state, { trx })
   }
 
-  noteCreditReservationFailed(trx) {
+  noteCreditReservationFailed() {
     this.state = Order.orderState.REJECTED;
-    return updateOrderState(this.id, this.state, { trx })
   }
 
   static orderState = {

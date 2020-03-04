@@ -1,6 +1,4 @@
-const { CustomerCreatedEvent, CustomerEntityTypeName } = require('../../../common/eventsConfig');
-const { EVENT_TYPE, AGGREGATE_TYPE, EVENT_DATA } = require('eventuate-tram-core-nodejs/lib/eventMessageHeaders');
-const { insertCustomerReservation, deleteCustomerReservation, getCustomerCreditReservations } = require('../mysql/customerCreditReservationsCrudService');
+const { CustomerCreatedEvent } = require('../../../common/eventsConfig');
 
 class Customer {
   constructor({ id, name, creditLimit }) {
@@ -15,24 +13,21 @@ class Customer {
     return [{ _type: CustomerCreatedEvent, name, creditLimit }]
   }
 
-  async loadReservations() {
-    const reservations = await getCustomerCreditReservations(this.id);
+  initCreditReservations(reservations) {
     reservations.forEach((r) => {
       this.creditReservations[r.order_id] = r.amount;
     });
   }
 
-  async availableCredit() {
-    await this.loadReservations();
+  availableCredit() {
     const reservationsSum = Object.values(this.creditReservations).reduce((acc, amount) => acc + amount, 0);
     return this.creditLimit - reservationsSum;
   }
 
-  async reserveCredit(orderId, orderTotal, tnx) {
+  reserveCredit(orderId, orderTotal) {
     const { amount } = orderTotal;
-    if (await this.availableCredit(tnx) >= amount) {
+    if (this.availableCredit() >= amount) {
       this.creditReservations[orderId] = amount;
-      await insertCustomerReservation(this.id, amount, orderId, { tnx });
     } else {
       throw new Error('CustomerCreditLimitExceededException');
     }
@@ -40,7 +35,6 @@ class Customer {
 
   unReserveCredit(orderId) {
     delete this.creditReservations[orderId];
-    return deleteCustomerReservation(orderId)
   }
 }
 
