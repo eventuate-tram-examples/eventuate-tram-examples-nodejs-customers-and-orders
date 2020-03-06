@@ -13,34 +13,18 @@ module.exports = {
   [CustomerEntityTypeName]: {
     [CustomerCreditReservedEvent]: (event) => {
       logger.debug('event:', event);
-      try {
-        const payload = JSON.parse(event.payload);
-        const { orderId } = payload;
-
-        return orderService.approveOrder(orderId);
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      const { payload: { orderId }} = event;
+      return orderService.approveOrder(orderId);
     },
     [CustomerCreditReservationFailedEvent]: (event) => {
       logger.debug('event:', event);
-      try {
-        const payload = JSON.parse(event.payload);
-        const { orderId } = payload;
-        return orderService.rejectOrder(orderId);
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      const { payload: { orderId }} = event;
+      return orderService.rejectOrder(orderId);
     },
     [CustomerValidationFailedEvent]: (event) => {
       logger.debug('event:', event);
-      try {
-        const payload = JSON.parse(event.payload);
-        const { orderId } = payload;
-        return orderService.rejectOrder(orderId);
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      const { payload: { orderId }} = event;
+      return orderService.rejectOrder(orderId);
     }
   }
 };

@@ -1,22 +1,15 @@
 const { CustomerCreatedEvent } = require('../../../common/eventsConfig');
 
 class Customer {
-  constructor({ id, name, creditLimit }) {
+  constructor({ id, name, creditLimit, creditReservations }) {
     this.id = id;
     this.name = name;
     this.creditLimit = creditLimit;
-    this.creditReservations = {};
-    this.creationTime = new Date().getTime();
+    this.creditReservations = creditReservations
   }
 
   static create({ name, creditLimit }) {
     return [{ _type: CustomerCreatedEvent, name, creditLimit }]
-  }
-
-  initCreditReservations(reservations) {
-    reservations.forEach((r) => {
-      this.creditReservations[r.order_id] = r.amount;
-    });
   }
 
   availableCredit() {
@@ -24,8 +17,7 @@ class Customer {
     return this.creditLimit - reservationsSum;
   }
 
-  reserveCredit(orderId, orderTotal) {
-    const { amount } = orderTotal;
+  reserveCredit(orderId, amount) {
     if (this.availableCredit() >= amount) {
       this.creditReservations[orderId] = amount;
     } else {

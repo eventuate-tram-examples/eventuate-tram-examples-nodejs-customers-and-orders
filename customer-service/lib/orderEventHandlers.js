@@ -1,7 +1,6 @@
-const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
-const knex = require('../../common/mysql/knex');
+const { DomainEventPublisher, DefaultChannelMapping, MessageProducer, eventMessageHeaders: { AGGREGATE_ID } } = require('eventuate-tram-core-nodejs');
 const { withTransaction } = require('../../common/mysql/utils');
-
+const { getCustomer } = require('./customerService');
 const {
   OrderEntityTypeName,
   OrderCreatedEvent,
@@ -11,9 +10,8 @@ const {
   CustomerValidationFailedEvent,
   CustomerCreditReservedEvent
 } = require('../../common/eventsConfig');
-const { getCustomerById } = require('../lib/mysql/customerCrudService');
-const Customer = require('./aggregates/Customer');
 const { insertCustomerReservation, deleteCustomerReservation, getCustomerCreditReservations } = require('./mysql/customerCreditReservationsCrudService');
+
 const { getLogger } = require('../../common/logger');
 const logger = getLogger({ title: 'customer-service' });
 
@@ -35,65 +33,59 @@ module.exports = {
   [OrderEntityTypeName]: {
     [OrderCreatedEvent]: async (event) => {
       logger.debug('event:', event);
-      const { partitionId: orderId } = event;
+      const { [AGGREGATE_ID]: orderId } = event;
 
       return withTransaction(async (trx) => {
-        let customerId;
+        const { payload: { orderDetails: { orderTotal: { amount }, customerId }} } = event;
+
+        if (typeof (customerId) === 'undefined') {
+          return publishCustomerValidationFailedEvent(orderId, String(customerId));
+        }
+
+        const customer = await getCustomer(customerId, trx);
+
+        if (!customer) {
+          return publishCustomerValidationFailedEvent(orderId, customerId, trx);
+        }
+
         try {
-          const payload = JSON.parse(event.payload);
-          const { orderDetails: { orderTotal }} = payload;
-          ({ orderDetails: { customerId }} = payload);
-
-          if (typeof (customerId) === 'undefined') {
-            return publishCustomerValidationFailedEvent(orderId, String(customerId));
-          }
-
-          const possibleCustomer = await getCustomerById(customerId, { trx });
-          if (!possibleCustomer) {
-            return publishCustomerValidationFailedEvent(orderId, customerId, trx);
-          }
-
-          const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
-          const reservations = await getCustomerCreditReservations(customer.id, { trx });
-          customer.initCreditReservations(reservations);
-          customer.reserveCredit(orderId, orderTotal);
-          await insertCustomerReservation(customer.id, orderTotal.amount, orderId, { trx });
-
-          const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
-          return domainEventPublisher.publish(CustomerEntityTypeName,
-            customerId,
-            [ customerCreditReservedEvent ],
-            { trx });
+          customer.reserveCredit(orderId, amount);
         } catch (err) {
           if (err.message === 'CustomerCreditLimitExceededException') {
             const customerCreditReservationFailedEvent = { _type: CustomerCreditReservationFailedEvent, orderId };
             return domainEventPublisher.publish(CustomerEntityTypeName, customerId, [ customerCreditReservationFailedEvent ]);
           }
-          return Promise.reject(err);
+
+          throw err;
         }
+
+        await insertCustomerReservation(customer.id, amount, orderId, { trx });
+
+        const customerCreditReservedEvent = { _type: CustomerCreditReservedEvent, orderId: Number(orderId) };
+
+        return domainEventPublisher.publish(CustomerEntityTypeName,
+          customerId,
+          [ customerCreditReservedEvent ],
+          { trx }
+        );
       });
     },
     [OrderCancelledEvent]: async (event) => {
       logger.debug('event:', event);
-      const { partitionId: orderId } = event;
-      try {
-        const payload = JSON.parse(event.payload);
-        const { orderDetails: { customerId }} = payload;
+      const { [AGGREGATE_ID]: orderId, payload: { orderDetails: { customerId }}} = event;
 
-        return withTransaction(async (trx) => {
+      return withTransaction(async (trx) => {
 
-          const possibleCustomer = await getCustomerById(customerId, { trx });
-          if (!possibleCustomer) {
-            return publishCustomerValidationFailedEvent(orderId, customerId, trx);
-          }
+        const customer = await getCustomer(customerId, trx);
 
-          const customer = new Customer({ id: customerId, name: possibleCustomer.name, creditLimit: possibleCustomer.amount });
-          customer.unReserveCredit(orderId);
-          return deleteCustomerReservation(orderId, { trx });
-        });
-      } catch (e) {
-        return Promise.reject(e);
-      }
+        if (!customer) {
+          return publishCustomerValidationFailedEvent(orderId, customerId, trx);
+        }
+
+        customer.unReserveCredit(orderId);
+
+        return deleteCustomerReservation(orderId, { trx });
+      });
     },
   }
 };

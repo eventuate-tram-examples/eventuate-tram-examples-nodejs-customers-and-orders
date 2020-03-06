@@ -2,7 +2,8 @@ const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require
 const Customer = require('./aggregates/Customer');
 const { CustomerEntityTypeName } = require('../../common/eventsConfig');
 const { withTransaction } = require('../../common/mysql/utils');
-const { insertIntoCustomerTable } = require('./mysql/customerCrudService');
+const { insertIntoCustomerTable, getCustomerById } = require('./mysql/customerCrudService');
+const { getCustomerCreditReservations } = require('./mysql/customerCreditReservationsCrudService');
 
 const channelMapping = new DefaultChannelMapping(new Map());
 const messageProducer = new MessageProducer({ channelMapping });
@@ -16,5 +17,26 @@ module.exports.create = async ({ name, creditLimit }) => {
     const events = Customer.create({ name, creditLimit });
     await domainEventPublisher.publish(CustomerEntityTypeName, aggregateId, events, { trx });
     return aggregateId;
+  });
+};
+
+module.exports.getCustomer = async (customerId, trx) => {
+  const customerData = await getCustomerById(customerId, { trx });
+  if (!customerData) {
+    return null;
+  }
+
+  const reservations = await getCustomerCreditReservations(customerId, { trx });
+
+  const creditReservations = reservations.reduce((acc, r) => {
+    acc[r.order_id] = r.amount;
+    return acc;
+  }, {});
+
+  return new Customer({
+    id: customerId,
+    name: customerData.name,
+    creditLimit: customerData.amount,
+    creditReservations
   });
 };
