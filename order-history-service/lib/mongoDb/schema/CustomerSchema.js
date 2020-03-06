@@ -17,6 +17,6 @@ const CustomerSchema = new Schema({
   }
 });
 
-CustomerSchema.set('collection', 'order');
+CustomerSchema.set('collection', 'customer');
 
-module.exports.OrderSchema = mongoose.model('order', CustomerSchema);
+module.exports = mongoose.model('customer', CustomerSchema);

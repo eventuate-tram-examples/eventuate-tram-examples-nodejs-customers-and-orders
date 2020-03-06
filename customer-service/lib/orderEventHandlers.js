@@ -10,7 +10,7 @@ const {
   CustomerValidationFailedEvent,
   CustomerCreditReservedEvent
 } = require('../../common/eventsConfig');
-const { insertCustomerReservation, deleteCustomerReservation, getCustomerCreditReservations } = require('./mysql/customerCreditReservationsCrudService');
+const { insertCustomerReservation, deleteCustomerReservation } = require('./mysql/customerCreditReservationsCrudService');
 
 const { getLogger } = require('../../common/logger');
 const logger = getLogger({ title: 'customer-service' });
