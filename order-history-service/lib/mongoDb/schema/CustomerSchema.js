@@ -12,8 +12,11 @@ const CustomerSchema = new Schema({
     required: true
   },
   creditLimit: {
-    type: mongoose.Decimal128,
-    required: true
+    type: Object,
+    amount: {
+      type: mongoose.Decimal128,
+      required: true
+    }
   }
 });
 

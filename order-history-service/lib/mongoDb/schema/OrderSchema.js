@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const OrderSchema = new Schema({
-  orderId: {
+  id: {
     type: Number,
     required: true,
     unique: true

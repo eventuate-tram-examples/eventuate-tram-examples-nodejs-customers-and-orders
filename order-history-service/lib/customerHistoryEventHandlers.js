@@ -4,7 +4,7 @@ const {
   CustomerEntityTypeName,
   CustomerCreatedEvent
 } = require('../../common/eventsConfig');
-const { createCustomer } = require('./customerHistoryService');
+const { createCustomer } = require('./orderHistoryService');
 
 const logger = getLogger({ title: 'order-history-service' });
 
@@ -12,8 +12,8 @@ module.exports = {
   [CustomerEntityTypeName]: {
     [CustomerCreatedEvent]: (event) => {
       logger.debug('event:', event);
-      const { [AGGREGATE_ID]: customerId, payload: { name, creditLimit: { amount } }} = event;
-      return createCustomer({ id: customerId, name, creditLimit: amount });
+      const { [AGGREGATE_ID]: customerId, payload: { name, creditLimit }} = event;
+      return createCustomer({ id: customerId, name, creditLimit });
     }
   }
 };

@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
 const orderCommandRoutes = require('./lib/orderCommandRoutes');
+const customerCommandRoutes = require('./lib/customerCommandRoutes');
 const { connectMongoDb } = require('./lib/mongoDb/db');
 const orderHistoryEventHandlers = require('./lib/customerHistoryEventHandlers');
 const { getLogger } = require('../common/logger');
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 
 app.use(morgan('dev'));
 app.use('/orders', orderCommandRoutes);
+app.use('/customers', customerCommandRoutes);
 app.get('/actuator/health', (req, res) => {
   res.status(200).send('OK');
 });

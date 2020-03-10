@@ -4,11 +4,15 @@ const { getLogger } = require('../../../common/logger');
 const logger = getLogger({ title: 'order-history-service' });
 
 const mongoDbUri = process.env.MONGODB_URI;
-logger.debug('mongoDbUri: ' + mongoDbUri);
+logger.debug(`mongoDbUri: ${mongoDbUri}`);
 
 module.exports.connectMongoDb = () => {
   return  new Promise((resolve, reject) => {
-    mongoose.connect(mongoDbUri, { useNewUrlParser: true, useUnifiedTopology: true, connectTimeoutMS: 10000 });
+    mongoose.connect(mongoDbUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      connectTimeoutMS: 10000
+    });
     const db = mongoose.connection;
 
     db.on('error', reject);
