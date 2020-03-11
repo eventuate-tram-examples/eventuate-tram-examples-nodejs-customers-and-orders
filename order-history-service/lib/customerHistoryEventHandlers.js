@@ -2,9 +2,14 @@ const { eventMessageHeaders: { AGGREGATE_ID } } = require('eventuate-tram-core-n
 const { getLogger } = require('../../common/logger');
 const {
   CustomerEntityTypeName,
-  CustomerCreatedEvent
+  CustomerCreatedEvent,
+  OrderEntityTypeName,
+  OrderCreatedEvent,
+  OrderApprovedEvent,
+  OrderRejectedEvent,
+  OrderCancelledEvent
 } = require('../../common/eventsConfig');
-const { createCustomer } = require('./orderHistoryService');
+const { createOrUpdateCustomer, createOrUpdateOrder, updateCustomerAndOrderViewState } = require('./orderHistoryService');
 
 const logger = getLogger({ title: 'order-history-service' });
 
@@ -13,7 +18,29 @@ module.exports = {
     [CustomerCreatedEvent]: (event) => {
       logger.debug('event:', event);
       const { [AGGREGATE_ID]: customerId, payload: { name, creditLimit }} = event;
-      return createCustomer({ id: customerId, name, creditLimit });
+      return createOrUpdateCustomer({ id: customerId, name, creditLimit });
+    }
+  },
+  [OrderEntityTypeName]: {
+    [OrderCreatedEvent]: async (event) => {
+      logger.debug('event:', event);
+      const { [AGGREGATE_ID]: orderId, payload: { orderDetails: { orderTotal, customerId }} } = event;
+      return updateCustomerAndOrderViewState({ orderId, customerId, orderTotal, state: 'PENDING' });
+    },
+    [OrderApprovedEvent]: async (event) => {
+      logger.debug('event:', event);
+      const { [AGGREGATE_ID]: orderId, payload: { orderDetails: { orderTotal, customerId }} } = event;
+      return updateCustomerAndOrderViewState({ orderId, customerId, orderTotal, state: 'APPROVED' });
+    },
+    [OrderRejectedEvent]: async (event) => {
+      logger.debug('event:', event);
+      const { [AGGREGATE_ID]: orderId, payload: { orderDetails: { orderTotal, customerId }} } = event;
+      return updateCustomerAndOrderViewState({ orderId, customerId, orderTotal, state: 'REJECTED' });
+    },
+    [OrderCancelledEvent]: async (event) => {
+      logger.debug('event:', event);
+      const { [AGGREGATE_ID]: orderId, payload: { orderDetails: { orderTotal, customerId }} } = event;
+      return updateCustomerAndOrderViewState({ orderId, customerId, orderTotal, state: 'CANCELLED' });
     }
   }
 };

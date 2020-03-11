@@ -7,6 +7,10 @@ const OrderSchema = new Schema({
     required: true,
     unique: true
   },
+  customerId: {
+    type: Number,
+    required: true,
+  },
   state: {
     type: String,
     required: true

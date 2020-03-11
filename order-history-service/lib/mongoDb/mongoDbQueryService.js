@@ -34,6 +34,13 @@ module.exports.createDocument = async (Model, data) => {
   }
 };
 
+module.exports.upsertDocument = (Model, data, condition) => {
+  return Model.findOneAndUpdate(condition, data, {
+    new: true,
+    upsert: true
+  });
+};
+
 module.exports.findDocument = (schema, condition = {}) => {
   return new Promise((resolve, reject) => {
     schema.find(condition, { _id: 0, __v: 0  }, { sort: { id: 1 }}, (err, res) => {

@@ -7,6 +7,10 @@ const CustomerSchema = new Schema({
     required: true,
     unique: true
   },
+  creationTime: {
+    type: Number,
+    default: new Date().getTime()
+  },
   name: {
     type: String,
     required: true
@@ -17,6 +21,9 @@ const CustomerSchema = new Schema({
       type: mongoose.Decimal128,
       required: true
     }
+  },
+  orders: {
+    type: Object
   }
 });
 

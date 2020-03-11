@@ -8,11 +8,15 @@ logger.debug(`mongoDbUri: ${mongoDbUri}`);
 
 module.exports.connectMongoDb = () => {
   return  new Promise((resolve, reject) => {
+
     mongoose.connect(mongoDbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
       connectTimeoutMS: 10000
     });
+
     const db = mongoose.connection;
 
     db.on('error', reject);
