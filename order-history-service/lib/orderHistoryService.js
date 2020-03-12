@@ -23,16 +23,17 @@ module.exports.getOrderById = async (id) => {
 const createOrUpdateOrder = (orderData) => upsertDocument(OrderSchema, orderData, { id: orderData.id });
 
 module.exports.updateCustomerAndOrderViewState = async ({ orderId, customerId, state, orderTotal }) => {
+  orderId = Number(orderId);
+  customerId = Number(customerId);
   await createOrUpdateOrder({ id: orderId, customerId, orderTotal, state });
+  const orderKey = `orders.${orderId}`;
   return createOrUpdateCustomer({
     id: customerId,
-    orders: {
-      [orderId]: {
-        orderId,
-        state,
-        orderTotal
-      },
-    }
+    [orderKey]: {
+      orderId,
+      state,
+      orderTotal
+    },
   });
 };
 
