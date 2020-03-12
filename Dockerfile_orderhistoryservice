@@ -1,0 +1,14 @@
+FROM node:12
+WORKDIR /app
+
+COPY eventuate-tram-core-nodejs ./eventuate-tram-core-nodejs
+
+#Copy package.json and package-lock.json(if exists) into container
+COPY package*.json ./
+
+RUN npm install
+
+COPY order-history-service ./order-history-service
+COPY common ./common
+
+CMD [ "node", "order-history-service/index.js" ]
