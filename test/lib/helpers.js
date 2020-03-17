@@ -2,6 +2,7 @@ const chai = require('chai');
 const { expect } = chai;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
+const retry = require('retry-assert');
 
 const host = process.env.DOCKER_HOST_IP;
 const ports = {
@@ -23,7 +24,6 @@ function delay(time) {
 }
 
 module.exports.createCustomer = async ({ name, amount }) => {
-  console.log('createCustomer()');
   const res = await chai.request(getServiceUrl('customer_service')).post('/customers').send({ name, creditLimit: { amount } });
   expect(res).to.have.status(200);
   const body = res.body;
@@ -34,7 +34,6 @@ module.exports.createCustomer = async ({ name, amount }) => {
 };
 
 module.exports.createOrder = async ({ customerId, amount }) => {
-  console.log('createOrder()');
   const res = await chai.request(getServiceUrl('order_service')).post('/orders').send({ customerId, orderTotal: { amount } });
   expect(res).to.have.status(200);
   const body = res.body;
@@ -45,7 +44,6 @@ module.exports.createOrder = async ({ customerId, amount }) => {
 };
 
 async function getOrder(id) {
-  console.log('getOrder()');
   const res = await chai.request(getServiceUrl('order_service')).get(`/orders/${id}`);
   expect(res).to.have.status(200);
   const body = res.body;
@@ -58,7 +56,6 @@ async function getOrder(id) {
 }
 
 module.exports.cancelOrder = async (orderId) => {
-  console.log('createOrder()');
   const res = await chai.request(getServiceUrl('order_service')).post(`/orders/${orderId}/cancel`);
   expect(res).to.have.status(200);
   const body = res.body;
@@ -72,13 +69,12 @@ module.exports.cancelOrder = async (orderId) => {
 };
 
 module.exports.assertOrderState = async ({ orderId, state }) => {
-  await delay(1000);
-  const order = await getOrder(orderId);
-  expect(order.orderState).eq(state);
+  return retry()
+    .fn(() => getOrder(orderId))
+    .until(order => expect(order.orderState).eq(state));
 };
 
 module.exports.getCustomerView = async (customerId) => {
-  await delay(1000);
   const res = await chai.request(getServiceUrl('order_history_service')).get(`/customers/${customerId}`);
   expect(res).to.have.status(200);
   const body = res.body;

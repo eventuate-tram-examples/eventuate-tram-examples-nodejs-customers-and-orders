@@ -1,3 +1,4 @@
+const retry = require('retry-assert');
 const { createCustomer, createOrder, assertOrderState, cancelOrder, getCustomerView, expectOrderState } = require('./lib/helpers');
 
 const timeout = 20000;
@@ -12,8 +13,9 @@ describe('CustomersAndOrders', function () {
     await assertOrderState({ orderId, state: 'APPROVED' });
     await cancelOrder(orderId);
     await assertOrderState({ orderId, state: 'CANCELLED' });
-    const customerView = await getCustomerView(customerId);
-    expectOrderState({ orderId, state: 'CANCELLED', orders: customerView.orders });
+    await retry()
+      .fn(() => getCustomerView(customerId))
+      .until(customerView => expectOrderState({ orderId, state: 'CANCELLED', orders: customerView.orders }));
   });
 
   it('should reject', async function () {
