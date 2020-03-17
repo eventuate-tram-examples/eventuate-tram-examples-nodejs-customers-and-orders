@@ -9,3 +9,7 @@ docker-compose up -d zookeeper kafka mysql mongodb cdcservice
 ./wait-for-services.sh $DOCKER_HOST_IP "8099"
 docker-compose up -d customerservice orderhistoryservice orderservice
 ./wait-for-services.sh $DOCKER_HOST_IP "8081 8082 8083"
+
+npm run test:end-to-end
+
+docker-compose down
