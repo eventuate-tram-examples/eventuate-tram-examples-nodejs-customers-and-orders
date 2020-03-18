@@ -1,6 +1,6 @@
 version: '3'
 services:
-  orderservice:
+  order-service:
     build:
       context: ./
       dockerfile: Dockerfile_orderservice
@@ -19,7 +19,7 @@ services:
       EVENTUATE_TRAM_MYSQL_PASSWORD: mysqlpw
       EVENTUATE_TRAM_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 #
-  customerservice:
+  customer-service:
     build:
       context: ./
       dockerfile: Dockerfile_customerservice
@@ -38,7 +38,7 @@ services:
       EVENTUATE_TRAM_MYSQL_PASSWORD: mysqlpw
       EVENTUATE_TRAM_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
-  orderhistoryservice:
+  order-history-service:
     build:
       context: ./
       dockerfile: Dockerfile_orderhistoryservice
