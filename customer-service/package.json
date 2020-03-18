@@ -1,0 +1,23 @@
+{
+  "name": "customer-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "eventuate-tram-core-nodejs": "^1.0.0",
+    "express": "^4.17.1",
+    "knex": "^0.20.8",
+    "log4js": "^6.1.1",
+    "morgan": "^1.9.1",
+    "mysql": "^2.18.1"
+  }
+}

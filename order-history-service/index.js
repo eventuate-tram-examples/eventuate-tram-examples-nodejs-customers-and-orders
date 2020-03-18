@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
 const { MessageConsumer, DomainEventDispatcher, DefaultDomainEventNameMapping } = require('eventuate-tram-core-nodejs');
 const orderCommandRoutes = require('./lib/orderCommandRoutes');
 const customerCommandRoutes = require('./lib/customerCommandRoutes');
@@ -13,9 +12,6 @@ const domainEventNameMapping = new DefaultDomainEventNameMapping();
 const messageConsumer = new MessageConsumer();
 const app = express();
 const port = process.env.CUSTOMER_SERVICE_PORT || 8083;
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 app.use(morgan('dev'));
 app.use('/orders', orderCommandRoutes);

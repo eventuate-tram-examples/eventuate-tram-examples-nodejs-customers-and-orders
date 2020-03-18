@@ -3,7 +3,7 @@ services:
   order-service:
     build:
       context: ./
-      dockerfile: Dockerfile_orderservice
+      dockerfile: Dockerfile_order_service
     ports:
       - "8081:8081"
     depends_on:
@@ -22,7 +22,7 @@ services:
   customer-service:
     build:
       context: ./
-      dockerfile: Dockerfile_customerservice
+      dockerfile: Dockerfile_customer_service
     ports:
       - "8082:8082"
     depends_on:
@@ -41,7 +41,7 @@ services:
   order-history-service:
     build:
       context: ./
-      dockerfile: Dockerfile_orderhistoryservice
+      dockerfile: Dockerfile_order_history_service
     ports:
       - "8083:8083"
     depends_on:

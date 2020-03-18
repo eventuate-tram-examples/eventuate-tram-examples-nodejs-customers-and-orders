@@ -1,0 +1,13 @@
+FROM node:12
+WORKDIR /app
+
+RUN mkdir order-service
+
+COPY ./order-service/package*.json ./order-service
+
+RUN cd ./order-service && npm install
+
+COPY order-service ./order-service
+COPY common ./common
+
+CMD [ "node", "order-service/index.js" ]

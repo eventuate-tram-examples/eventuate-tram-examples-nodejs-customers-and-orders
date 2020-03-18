@@ -1,0 +1,13 @@
+FROM node:12
+WORKDIR /app
+
+RUN mkdir customer-service
+
+COPY ./customer-service/package*.json ./customer-service
+
+RUN cd ./customer-service && npm install
+
+COPY customer-service ./customer-service
+COPY common ./common
+
+CMD [ "node", "customer-service/index.js" ]
