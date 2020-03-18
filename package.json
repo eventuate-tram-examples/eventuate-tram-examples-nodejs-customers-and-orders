@@ -9,17 +9,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dartvandru/eventuate-tram-examples-nodejs-customers-and-orders.git"
+    "url": "git+https://github.com/eventuate-incubator/eventuate-tram-examples-nodejs-customers-and-orders.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dartvandru/eventuate-tram-examples-nodejs-customers-and-orders/issues"
+    "url": "https://github.com/eventuate-incubator/eventuate-tram-examples-nodejs-customers-and-orders/issues"
   },
-  "homepage": "https://github.com/dartvandru/eventuate-tram-examples-nodejs-customers-and-orders#readme",
+  "homepage": "https://github.com/eventuate-incubator/eventuate-tram-examples-nodejs-customers-and-orders#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "eventuate-tram-core-nodejs": "file:eventuate-tram-core-nodejs",
+    "eventuate-tram-core-nodejs": "git+ssh://git@github.com/eventuate-incubator/eventuate-tram-core-nodejs.git",
     "express": "^4.17.1",
     "knex": "^0.20.8",
     "log4js": "^6.1.1",
