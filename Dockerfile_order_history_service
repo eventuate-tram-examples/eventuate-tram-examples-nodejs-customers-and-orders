@@ -3,11 +3,14 @@ WORKDIR /app
 
 RUN mkdir order-history-service
 
-COPY ./order-history-service/package*.json ./order-history-service
+COPY ./common-module ./common-module
 
+COPY ./order-history-service/package*.json ./order-history-service/
+COPY ./common-module/package*.json ./common-module/
+
+RUN cd ./common-module && npm install
 RUN cd ./order-history-service && npm install
 
 COPY order-history-service ./order-history-service
-COPY common ./common
 
 CMD [ "node", "order-history-service/index.js" ]

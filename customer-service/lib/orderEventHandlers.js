@@ -1,5 +1,5 @@
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer, eventMessageHeaders: { AGGREGATE_ID } } = require('eventuate-tram-core-nodejs');
-const { withTransaction } = require('../../common/mysql/utils');
+const { withTransaction } = require('common-module/mysql-lib/utils');
 const { getCustomer } = require('./customerService');
 const {
   OrderEntityTypeName,
@@ -9,10 +9,10 @@ const {
   CustomerCreditReservationFailedEvent,
   CustomerValidationFailedEvent,
   CustomerCreditReservedEvent
-} = require('../../common/eventsConfig');
+} = require('common-module/eventsConfig');
 const { insertCustomerReservation, deleteCustomerReservation } = require('./mysql/customerCreditReservationsCrudService');
 
-const { getLogger } = require('../../common/logger');
+const { getLogger } = require('common-module/logger');
 const logger = getLogger({ title: 'customer-service' });
 
 const channelMapping = new DefaultChannelMapping(new Map());

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getLogger } = require('../../common/logger');
+const { getLogger } = require('common-module/logger');
 const orderCommandService = require('./orderService');
 const logger = getLogger({ title: 'order-service' });
 const Order = require('./aggregates/Order');

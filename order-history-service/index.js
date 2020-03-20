@@ -5,7 +5,7 @@ const orderCommandRoutes = require('./lib/orderCommandRoutes');
 const customerCommandRoutes = require('./lib/customerCommandRoutes');
 const { connectMongoDb } = require('./lib/mongoDb/db');
 const orderHistoryEventHandlers = require('./lib/customerHistoryEventHandlers');
-const { getLogger } = require('../common/logger');
+const { getLogger } = require('common-module/logger');
 
 const logger = getLogger({ title: 'order-history-service' });
 const domainEventNameMapping = new DefaultDomainEventNameMapping();

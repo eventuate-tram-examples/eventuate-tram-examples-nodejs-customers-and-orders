@@ -3,11 +3,14 @@ WORKDIR /app
 
 RUN mkdir order-service
 
-COPY ./order-service/package*.json ./order-service
+COPY common-module ./common-module
 
+COPY ./order-service/package*.json ./order-service/
+COPY ./common-module/package*.json ./common-module/
+
+RUN cd ./common-module && npm install
 RUN cd ./order-service && npm install
 
 COPY order-service ./order-service
-COPY common ./common
 
 CMD cd order-service && node index.js

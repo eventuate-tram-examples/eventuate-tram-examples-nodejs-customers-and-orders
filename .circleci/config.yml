@@ -28,6 +28,7 @@ jobs:
       - run:
           name: build-and-test
           command: |
+            npm install
             . ./.circleci/setenv-circle-ci.sh
             ./build-and-test-all.sh
       - run:

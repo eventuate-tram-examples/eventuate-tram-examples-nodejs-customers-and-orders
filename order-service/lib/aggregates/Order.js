@@ -1,4 +1,4 @@
-const { OrderCreatedEvent } = require('../../../common/eventsConfig');
+const { OrderCreatedEvent } = require('common-module/eventsConfig');
 
 class Order {
   constructor({ id, orderDetails, state }) {

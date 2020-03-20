@@ -1,10 +1,10 @@
-const { getLogger } = require('../../common/logger');
+const { getLogger } = require('common-module/logger');
 const {
   CustomerEntityTypeName,
   CustomerCreditReservationFailedEvent,
   CustomerValidationFailedEvent,
   CustomerCreditReservedEvent
-} = require('../../common/eventsConfig');
+} = require('common-module/eventsConfig');
 const orderService = require('./orderService.js');
 
 const logger = getLogger({ title: 'customer-service' });

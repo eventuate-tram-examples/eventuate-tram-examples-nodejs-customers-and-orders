@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { getLogger } = require('../../../common/logger');
+const { getLogger } = require('common-module/logger');
 
 const logger = getLogger({ title: 'order-history-service' });
 

@@ -1,0 +1,16 @@
+{
+  "name": "common-module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "knex": "^0.20.12",
+    "log4js": "^6.1.2",
+    "mysql": "^2.18.1"
+  }
+}

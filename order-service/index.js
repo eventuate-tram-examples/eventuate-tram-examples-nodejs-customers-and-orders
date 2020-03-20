@@ -1,6 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
-const { getLogger } = require('../common/logger');
+const { getLogger } = require('common-module/logger');
 const bodyParser = require('body-parser');
 const orderCommandRoutes = require('./lib/orderCommandRoutes');
 const logger = getLogger({ title: 'order-service' });
