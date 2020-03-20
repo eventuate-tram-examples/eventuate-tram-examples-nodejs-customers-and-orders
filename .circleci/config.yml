@@ -32,7 +32,7 @@ jobs:
             ./build-and-test-all.sh
       - run:
           name: Save test results
-          command: ./.circle/save-containers-and-tests.sh
+          command: ./.circleci/save-containers-and-tests.sh
           when: always
       - store_artifacts:
           path: ~/container-logs
