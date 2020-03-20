@@ -10,4 +10,4 @@ RUN cd ./order-service && npm install
 COPY order-service ./order-service
 COPY common ./common
 
-CMD [ "node", "order-service/index.js" ]
+CMD cd order-service && node index.js
