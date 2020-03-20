@@ -20,6 +20,12 @@ while [[ "$done" = false ]]; do
 		echo services are started
 		break;
   fi
+	STOPPED_CONTAINERS=$(docker ps -a | egrep 'eventuate.*Exited')
+	if [ ! -z "$STOPPED_CONTAINERS" ] ; then
+		echo stopped exited containers
+		echo $STOPPED_CONTAINERS
+		exit 99
+	fi
 	echo -n .
 	sleep 1
 done

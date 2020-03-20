@@ -30,3 +30,9 @@ jobs:
           command: |
             . ./.circleci/setenv-circle-ci.sh
             ./build-and-test-all.sh
+      - run:
+          name: Save test results
+          command: ./.circle/save-containers-and-tests.sh
+          when: always
+      - store_artifacts:
+          path: ~/container-logs
