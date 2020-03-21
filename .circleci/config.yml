@@ -7,15 +7,15 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - eventuate-tram-examples-nodejs-customers-and-orders-{{ checksum "package.json" }}
+            - eventuate-tram-examples-nodejs-customers-and-orders-{{ checksum "end-to-end-tests/package.json" }}
             - eventuate-tram-examples-nodejs-customers-and-orders-
           paths:
-            - ./node_modules
+            - ./end-to-end-tests/node_modules
       - run:
           name: install-npm-wee
           command: npm install
       - save_cache:
-          key: eventuate-tram-examples-nodejs-customers-and-orders-{{ checksum "package.json" }}
+          key: eventuate-tram-examples-nodejs-customers-and-orders-{{ checksum "end-to-end-tests/package.json" }}
           paths:
             - ./node_modules
       - run:
