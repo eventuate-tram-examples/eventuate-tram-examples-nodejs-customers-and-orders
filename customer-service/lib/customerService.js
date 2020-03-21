@@ -1,7 +1,7 @@
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Customer = require('./aggregates/Customer');
-const { CustomerEntityTypeName } = require('../../common/eventsConfig');
-const { withTransaction } = require('../../common/mysql/utils');
+const { CustomerEntityTypeName } = require('common-module/eventsConfig');
+const { withTransaction } = require('common-module/mysql-lib/utils');
 const { insertIntoCustomerTable, getCustomerById } = require('./mysql/customerCrudService');
 const { getCustomerCreditReservations } = require('./mysql/customerCreditReservationsCrudService');
 

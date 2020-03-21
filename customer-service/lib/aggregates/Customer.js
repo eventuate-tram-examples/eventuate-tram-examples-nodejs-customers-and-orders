@@ -1,4 +1,4 @@
-const { CustomerCreatedEvent } = require('../../../common/eventsConfig');
+const { CustomerCreatedEvent } = require('common-module/eventsConfig');
 
 class Customer {
   constructor({ id, name, creditLimit, creditReservations }) {

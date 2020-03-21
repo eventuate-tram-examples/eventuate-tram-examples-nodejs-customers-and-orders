@@ -1,5 +1,5 @@
 const { eventMessageHeaders: { AGGREGATE_ID } } = require('eventuate-tram-core-nodejs');
-const { getLogger } = require('../../common/logger');
+const { getLogger } = require('common-module/logger');
 const {
   CustomerEntityTypeName,
   CustomerCreatedEvent,
@@ -8,7 +8,7 @@ const {
   OrderApprovedEvent,
   OrderRejectedEvent,
   OrderCancelledEvent
-} = require('../../common/eventsConfig');
+} = require('common-module/eventsConfig');
 const { createOrUpdateCustomer, createOrUpdateOrder, updateCustomerAndOrderViewState } = require('./orderHistoryService');
 
 const logger = getLogger({ title: 'order-history-service' });

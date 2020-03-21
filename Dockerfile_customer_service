@@ -3,11 +3,14 @@ WORKDIR /app
 
 RUN mkdir customer-service
 
-COPY ./customer-service/package*.json ./customer-service
+COPY common-module ./common-module
 
+COPY ./customer-service/package*.json ./customer-service/
+COPY ./common-module/package*.json ./common-module/
+
+RUN cd ./common-module && npm install
 RUN cd ./customer-service && npm install
 
 COPY customer-service ./customer-service
-COPY common ./common
 
 CMD [ "node", "customer-service/index.js" ]

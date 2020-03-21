@@ -1,9 +1,8 @@
 const { DomainEventPublisher, DefaultChannelMapping, MessageProducer } = require('eventuate-tram-core-nodejs');
 const Order = require('./aggregates/Order');
-const { OrderEntityTypeName, OrderCancelledEvent, OrderApprovedEvent, OrderRejectedEvent } = require('../../common/eventsConfig');
+const { OrderEntityTypeName, OrderCancelledEvent, OrderApprovedEvent, OrderRejectedEvent } = require('common-module/eventsConfig');
 const { insertIntoOrdersTable, getOrderById, updateOrderState } = require('./mysql/orderCrudService');
-const knex = require('../../common/mysql/knex');
-const { withTransaction } = require('../../common/mysql/utils');
+const { withTransaction } = require('common-module/mysql-lib/utils');
 
 const channelMapping = new DefaultChannelMapping(new Map());
 const messageProducer = new MessageProducer({ channelMapping });

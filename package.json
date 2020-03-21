@@ -1,0 +1,21 @@
+{
+  "name": "eventuate-tram-examples-nodejs-customers-and-orders",
+  "version": "1.0.0",
+  "description": "This application demonstrates two key patterns:",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:end-to-end": "mocha test/CustomersAndOrdersEndToEnd-spec.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^7.1.1",
+    "retry-assert": "^1.0.0"
+  }
+}

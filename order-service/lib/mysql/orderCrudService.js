@@ -1,5 +1,5 @@
-const knex = require('../../../common/mysql/knex');
-const { getLogger } = require('../../../common/logger');
+const knex = require('common-module/mysql-lib/knex');
+const { getLogger } = require('common-module/logger');
 
 const logger = getLogger({ title: 'order-service' });
 const ORDER_TABLE = 'orders';
