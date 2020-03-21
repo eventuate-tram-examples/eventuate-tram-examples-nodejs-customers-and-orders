@@ -5,6 +5,6 @@ set -e
 
 ./run-services.sh
 
-npm run test:end-to-end
+./run-end-to-end-tests.sh
 
 docker-compose down
